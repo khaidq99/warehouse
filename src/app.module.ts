@@ -1,10 +1,6 @@
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { CatsModule } from './cats/cats.module';
+import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { UsersModule } from './users/users.module';
-import { User } from "./users/entities/user.entity";
+import { UsersModule } from "./modules/users/users.module";
 
 @Module({
   imports: [
@@ -15,13 +11,10 @@ import { User } from "./users/entities/user.entity";
       username: 'root',
       password: '123456',
       database: 'warehouse',
-      entities: [User],
-      synchronize: true,
+      autoLoadEntities: true,
+      synchronize: false
     }),
-    CatsModule,
     UsersModule
-  ],
-  controllers: [AppController],
-  providers: [AppService],
+  ]
 })
 export class AppModule {}
