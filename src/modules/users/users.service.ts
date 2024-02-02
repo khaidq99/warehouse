@@ -4,16 +4,30 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../../database/entities/user.entity";
 import { Repository } from "typeorm";
+import { Address } from "../../database/entities/address.entity";
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+
+    @InjectRepository(Address)
+    private addressRepository: Repository<Address>,
   ) {}
 
   async create(@Body() createUserDto: CreateUserDto) {
-    return this.usersRepository.save(createUserDto);
+    const address = await this.addressRepository.findOneBy({id: 1});
+
+    const user = new User();
+    user.name = createUserDto.name;
+    user.username = createUserDto.username;
+    user.password = createUserDto.password;
+    user.address = address;
+
+    //await this.addressRepository.save(address);
+
+    return this.usersRepository.save(user);
   }
 
   async findAll(): Promise<User[]> {
@@ -27,12 +41,16 @@ export class UsersService {
     return user;
   }
 
+  async findByUsername(username: string) {
+    const user = await this.usersRepository.findOneBy({ username });
+
+    return user;
+  }
+
   async update(id: number, updateUserDto: UpdateUserDto) {
     const user = await this.findOne(id);
 
-    user.firstName = updateUserDto.firstName;
-    user.lastName = updateUserDto.lastName;
-    user.isActive = updateUserDto.isActive;
+    user.name = updateUserDto.name;
 
     return this.usersRepository.save(user);
   }
