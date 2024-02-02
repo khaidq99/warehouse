@@ -15,6 +15,9 @@ export class User {
   @Column()
   name: string;
 
+  @Column({name: "is_admin"})
+  isAdmin: string;
+
   @OneToOne(type => Address)
   @JoinColumn({name: "address_id"})
   address: Address

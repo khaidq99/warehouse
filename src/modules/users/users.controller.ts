@@ -2,6 +2,8 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from 
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Roles } from "../auth/decorators/roles.decorator";
+import { Role } from "../auth/role.enum";
 
 @Controller('users')
 export class UsersController {
@@ -28,6 +30,7 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @Roles(Role.Admin)
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.remove(id);
   }

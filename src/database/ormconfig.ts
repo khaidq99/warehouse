@@ -9,7 +9,7 @@ export const dataSourceOptions: DataSourceOptions = {
   database: 'warehouse',
   logging: true,
   entities: ['./dist/database/entities/*.entity{ .ts,.js}'],
-  migrations: ['./dist/database/migrations/*{.ts,.js}'],
+  migrations: ['./src/database/migrations/*{.ts,.js}'],
   migrationsRun: true,
   synchronize: false
 };
