@@ -10,7 +10,7 @@ export class Book {
   name: string;
 
   @Column()
-  description: string;
+  author: string;
 
   @ManyToOne(type => Room, room => room.books)
   room: Room

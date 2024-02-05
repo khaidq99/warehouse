@@ -1,5 +1,4 @@
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Address } from "./address.entity";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Book } from "./book.entity";
 
 @Entity()
@@ -9,13 +8,6 @@ export class Room {
 
   @Column({unique: true})
   name: string;
-
-  @Column()
-  description: string;
-
-  @OneToOne(type => Address)
-  @JoinColumn({name: "address_id"})
-  address: Address
 
   @OneToMany(type => Book, book => book.room)
   books: Book[]

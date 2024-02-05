@@ -31,7 +31,6 @@ export class RoomsService {
     const room = await this.findOne(id);
 
     room.name = updateRoomDto.name;
-    room.description = updateRoomDto.description;
 
     return this.roomRepository.save(room);
   }

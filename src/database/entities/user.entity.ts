@@ -1,12 +1,13 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Address } from "./address.entity";
+import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Role } from "./role.entity";
+import { Exclude } from "class-transformer";
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({unique: true})
   username: string;
 
   @Column()
@@ -15,10 +16,7 @@ export class User {
   @Column()
   name: string;
 
-  @Column({name: "is_admin"})
-  isAdmin: string;
-
-  @OneToOne(type => Address)
-  @JoinColumn({name: "address_id"})
-  address: Address
+  @OneToOne(type => Role)
+  @JoinColumn({name: "role_id"})
+  role: Role
 }

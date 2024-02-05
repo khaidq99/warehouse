@@ -1,10 +1,12 @@
 import { Body, HttpException, Injectable } from "@nestjs/common";
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserDto } from "./dto/create-user.dto";
+import { UpdateUserDto } from "./dto/update-user.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../../database/entities/user.entity";
 import { Repository } from "typeorm";
-import { Address } from "../../database/entities/address.entity";
+import { Role } from "../../database/entities/role.entity";
+import { Role as RoleEnum } from "../../common/guards/role.enum";
+import * as bcrypt from "bcrypt";
 
 @Injectable()
 export class UsersService {
@@ -12,22 +14,27 @@ export class UsersService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
 
-    @InjectRepository(Address)
-    private addressRepository: Repository<Address>,
+    @InjectRepository(Role)
+    private roleRepository: Repository<Role>,
   ) {}
 
-  async create(@Body() createUserDto: CreateUserDto) {
-    const address = await this.addressRepository.findOneBy({id: 1});
+  async registerUser(@Body() createUserDto: CreateUserDto) {
+    let user = await this.usersRepository.findOneBy({username: createUserDto.username});
+    if (user) throw new HttpException("User already registered", 400);
 
-    const user = new User();
+    user = new User();
     user.name = createUserDto.name;
     user.username = createUserDto.username;
-    user.password = createUserDto.password;
-    user.address = address;
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(createUserDto.password, salt);
 
-    //await this.addressRepository.save(address);
+    user.role = await this.roleRepository.findOneBy({ name: RoleEnum.User });
 
-    return this.usersRepository.save(user);
+    await this.usersRepository.save(user);
+
+    return {
+      success: true
+    }
   }
 
   async findAll(): Promise<User[]> {
@@ -42,9 +49,14 @@ export class UsersService {
   }
 
   async findByUsername(username: string) {
-    const user = await this.usersRepository.findOneBy({ username });
-
-    return user;
+    return await this.usersRepository.findOne(
+      {
+        relations: ['role'],
+        where: {
+          'username': username
+        },
+      }
+    );
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {

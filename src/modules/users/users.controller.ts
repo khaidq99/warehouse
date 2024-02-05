@@ -2,19 +2,22 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from 
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Roles } from "../auth/decorators/roles.decorator";
-import { Role } from "../auth/role.enum";
+import { Roles } from "../../common/decorators/roles.decorator";
+import { Role } from "../../common/guards/role.enum";
+import { Public } from "../../common/decorators/public-decorator";
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
+  @Public()
   create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+    return this.usersService.registerUser(createUserDto);
   }
 
   @Get()
+  @Roles(Role.Admin)
   findAll() {
     return this.usersService.findAll();
   }
