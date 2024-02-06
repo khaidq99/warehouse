@@ -10,5 +10,6 @@ import { RoomRepository } from "./room.repository";
   imports: [TypeOrmModule.forFeature([Room, Book])],
   controllers: [RoomsController],
   providers: [RoomsService, RoomRepository],
+  exports: [RoomsService]
 })
 export class RoomsModule {}

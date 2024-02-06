@@ -25,7 +25,11 @@ export class RoomsService {
   }
 
   async findOne(id: number) {
-    const room = await this.roomRepository.findOneBy({ id });
+    //const room = await this.roomRepository.findOneBy({ id });
+    const room = await this.roomRepository.createQueryBuilder('r')
+      //.leftJoinAndSelect("r.books", "b")
+      .where("r.id = :id", { id: id })
+      .getOne();
 
     if (!room) throw new HttpException("Room not found", 400);
     return room;
