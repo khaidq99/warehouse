@@ -1,7 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  DefaultValuePipe,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query
+} from "@nestjs/common";
 import { RoomsService } from "./rooms.service";
-import { CreateRoomsDto } from './dto/create-rooms.dto';
-import { UpdateRoomDto } from './dto/update-room.dto';
+import { CreateRoomsDto } from "./dto/create-rooms.dto";
+import { UpdateRoomDto } from "./dto/update-room.dto";
+import { IPaginationOptions } from "nestjs-typeorm-paginate";
 
 @Controller('rooms')
 export class RoomsController {
@@ -13,8 +25,15 @@ export class RoomsController {
   }
 
   @Get()
-  findAll() {
-    return this.roomsService.findAll();
+  findAll(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number = 10
+  ) {
+    const options: IPaginationOptions = {
+      limit,
+      page
+    }
+    return this.roomsService.paginate(options);
   }
 
   @Get(':id')

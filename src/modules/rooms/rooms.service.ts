@@ -1,23 +1,27 @@
 import { Body, HttpException, Injectable } from "@nestjs/common";
 import { CreateRoomsDto } from "./dto/create-rooms.dto";
 import { UpdateRoomDto } from "./dto/update-room.dto";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { RoomRepository } from "./room.repository";
 import { Room } from "../../database/entities/room.entity";
+import { IPaginationOptions, Pagination, paginate } from "nestjs-typeorm-paginate";
 
 @Injectable()
 export class RoomsService {
   constructor(
-    @InjectRepository(Room)
-    private roomRepository: Repository<Room>,
+    private roomRepository: RoomRepository,
   ) {}
 
   async create(@Body() dto: CreateRoomsDto) {
-    return this.roomRepository.save(dto);
+    const room = new Room();
+    room.name = dto.name;
+    return this.roomRepository.save(room);
   }
 
-  async findAll() {
-    return this.roomRepository.find();
+  async paginate(options: IPaginationOptions): Promise<Pagination<Room>> {
+    const queryBuilder = this.roomRepository.createQueryBuilder('r');
+    queryBuilder.orderBy('r.name', 'ASC');
+
+    return paginate<Room>(queryBuilder, options);
   }
 
   async findOne(id: number) {
@@ -39,6 +43,8 @@ export class RoomsService {
     const room = await this.findOne(id);
     await this.roomRepository.delete(room);
 
-    return {success: true}
+    return {
+      success: true
+    }
   }
 }
