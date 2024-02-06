@@ -1,6 +1,6 @@
-import { HttpException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { HttpException, Injectable } from "@nestjs/common";
 import { UsersService } from "../users/users.service";
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from "bcrypt";
 import { JwtService } from "@nestjs/jwt";
 
 @Injectable()
@@ -17,7 +17,7 @@ export class AuthService {
 
     const validPassword = await bcrypt.compare(pass, user.password);
     if (!validPassword) {
-      throw new UnauthorizedException();
+      throw new HttpException("Invalid username or password", 400);
     }
     const payload = { id: user.id, username: user.username, role: user.role.name };
     return {

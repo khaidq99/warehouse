@@ -1,21 +1,19 @@
 import { Body, HttpException, Injectable } from "@nestjs/common";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
-import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../../database/entities/user.entity";
-import { Repository } from "typeorm";
-import { Role } from "../../database/entities/role.entity";
-import { Role as RoleEnum } from "../../common/guards/role.enum";
 import * as bcrypt from "bcrypt";
+import { UserRepository } from "./users.repository";
+import { RoleService } from "../role/role.service";
+import { ERole } from "../../enums/role.enum";
+import { IPaginationOptions, paginate, Pagination } from "nestjs-typeorm-paginate";
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(User)
-    private usersRepository: Repository<User>,
+    private usersRepository: UserRepository,
 
-    @InjectRepository(Role)
-    private roleRepository: Repository<Role>,
+    private roleService: RoleService,
   ) {}
 
   async registerUser(@Body() createUserDto: CreateUserDto) {
@@ -28,7 +26,7 @@ export class UsersService {
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(createUserDto.password, salt);
 
-    user.role = await this.roleRepository.findOneBy({ name: RoleEnum.User });
+    user.role = await this.roleService.getRole(ERole.User);
 
     await this.usersRepository.save(user);
 
@@ -37,8 +35,12 @@ export class UsersService {
     }
   }
 
-  async findAll(): Promise<User[]> {
-    return this.usersRepository.find();
+  async paginate(options: IPaginationOptions): Promise<Pagination<User>> {
+    const queryBuilder = this.usersRepository.createQueryBuilder('u');
+    queryBuilder.orderBy('u.name', 'DESC');
+    queryBuilder.select(['u.id', 'u.username', 'u.name']);
+
+    return paginate<User>(queryBuilder, options);
   }
 
   async findOne(id: number) {
@@ -64,13 +66,19 @@ export class UsersService {
 
     user.name = updateUserDto.name;
 
-    return this.usersRepository.save(user);
+    const updatedUser =  await this.usersRepository.save(user);
+    const responseUser = { ...updatedUser };
+    delete responseUser.password;
+
+    return responseUser;
   }
 
   async remove(id: number) {
     const user = await this.findOne(id);
     await this.usersRepository.delete(user);
 
-    return {success: true}
+    return {
+      success: true
+    }
   }
 }
